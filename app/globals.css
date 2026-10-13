@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  color-scheme: light;
+}
+
+body {
+  background-color: #FFFFFF;
+  color: #141A18;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+.field-label {
+  font-family: "SF Mono", "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #68716D;
+}
+
+.field-input {
+  width: 100%;
+  border: 1px solid #E1E5E2;
+  background-color: #FFFFFF;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.9375rem;
+  color: #141A18;
+  border-radius: 3px;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.field-input:focus {
+  outline: none;
+  border-color: #2B6E64;
+  box-shadow: 0 0 0 3px #E7F0EE;
+}
+
+.field-input::placeholder {
+  color: #B7BCB9;
+}
+
+/* Small medical-cross accent mark used sparingly as a signature motif */
+.cross-mark {
+  position: relative;
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+}
+.cross-mark::before,
+.cross-mark::after {
+  content: '';
+  position: absolute;
+  background-color: #2B6E64;
+}
+.cross-mark::before {
+  top: 0;
+  left: 4px;
+  width: 2px;
+  height: 10px;
+}
+.cross-mark::after {
+  top: 4px;
+  left: 0;
+  width: 10px;
+  height: 2px;
+}

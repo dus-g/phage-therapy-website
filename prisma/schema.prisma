@@ -1,0 +1,175 @@
+// PHAGE THERAPY WEBSITE - PRISMA SCHEMA
+// PostgreSQL | Neon
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_DIRECT")
+}
+
+model BlogPost {
+  id                String     @id @default(cuid())
+
+  slug              String     @unique @db.Char(160)
+  title_en          String     @db.Char(160)
+  title_zh          String     @default("") @db.Char(160)
+  excerpt_en        String     @default("") @db.Char(256)
+  excerpt_zh        String     @default("") @db.Char(256)
+  content_en        String     @default("") @db.Text
+  content_zh        String     @default("") @db.Text
+  cover_image_url   String     @default("") @db.Char(256)
+
+  is_published      Boolean    @default(false)
+  published_at      DateTime?  @db.Timestamptz
+
+  date_created      DateTime   @default(now()) @db.Timestamptz
+  date_updated      DateTime   @updatedAt @db.Timestamptz
+
+  media             BlogMedia[]
+
+  @@index([is_published, published_at], name: "blog_published_idx")
+  @@map("blog_post")
+}
+
+model BlogMedia {
+  id            String    @id @default(cuid())
+  post_id       String
+
+  media_type    Int       @db.SmallInt // 0=Image, 1=Video
+  file_url      String    @db.Char(256)
+  caption       String    @default("") @db.Char(96) // e.g. "Before", "After", "Week 4"
+  sort_order    Int       @default(0) @db.SmallInt
+
+  date_created  DateTime  @default(now()) @db.Timestamptz
+
+  post          BlogPost  @relation(fields: [post_id], references: [id], onDelete: Cascade)
+
+  @@index([post_id], name: "blog_media_post_idx")
+  @@map("blog_media")
+}
+
+model CaseStudy {
+  id                String    @id @default(cuid())
+
+  slug              String    @unique @db.Char(160)
+  title_en          String    @db.Char(160)
+  title_zh          String    @default("") @db.Char(160)
+  condition_en      String    @default("") @db.Char(160)
+  condition_zh      String    @default("") @db.Char(160)
+  summary_en        String    @default("") @db.Char(512)
+  summary_zh        String    @default("") @db.Char(512)
+  cover_image_url   String    @default("") @db.Char(256)
+
+  status            Int       @default(0) @db.SmallInt // 0=Recruiting, 1=In Progress, 2=Completed
+  started_at        DateTime? @db.Date
+
+  is_published      Boolean   @default(false)
+
+  date_created      DateTime  @default(now()) @db.Timestamptz
+  date_updated      DateTime  @updatedAt @db.Timestamptz
+
+  updates           CaseStudyUpdate[]
+
+  @@index([is_published, started_at], name: "case_study_published_idx")
+  @@map("case_study")
+}
+
+model CaseStudyUpdate {
+  id                String    @id @default(cuid())
+  case_study_id     String
+
+  title_en          String    @db.Char(160)
+  title_zh          String    @default("") @db.Char(160)
+  content_en        String    @default("") @db.Text
+  content_zh        String    @default("") @db.Text
+  update_date       DateTime  @db.Date
+
+  is_published      Boolean   @default(false)
+
+  date_created      DateTime  @default(now()) @db.Timestamptz
+  date_updated      DateTime  @updatedAt @db.Timestamptz
+
+  case_study        CaseStudy @relation(fields: [case_study_id], references: [id], onDelete: Cascade)
+  media             CaseStudyMedia[]
+
+  @@index([case_study_id, update_date], name: "case_update_study_idx")
+  @@map("case_study_update")
+}
+
+model CaseStudyMedia {
+  id                String    @id @default(cuid())
+  update_id         String
+
+  media_type        Int       @db.SmallInt // 0=Image, 1=Video
+  file_url          String    @db.Char(256)
+  caption           String    @default("") @db.Char(96)
+  sort_order        Int       @default(0) @db.SmallInt
+
+  date_created      DateTime  @default(now()) @db.Timestamptz
+
+  update            CaseStudyUpdate @relation(fields: [update_id], references: [id], onDelete: Cascade)
+
+  @@index([update_id], name: "case_media_update_idx")
+  @@map("case_study_media")
+}
+
+model PhageTherapySurvey {
+  id                      String    @id @default(cuid())
+
+  // ── Patient Information ──
+  patient_name            String    @default("") @db.Char(160)
+  date_of_birth            String    @default("") @db.Char(32)
+  gender                    String    @default("") @db.Char(32)
+
+  // ── Chief Complaint ──
+  contact_reason             String    @default("") @db.Text
+
+  // ── Medical History ──
+  chronic_conditions          String    @default("") @db.Text
+  prior_surgeries              String    @default("") @db.Text
+
+  // ── Symptoms ──
+  current_symptoms              String    @default("") @db.Text
+
+  // ── Analysis and Diagnosis ──
+  diagnostic_tests_done          String    @default("") @db.Text
+  latest_test_date                String    @default("") @db.Char(32)
+  provisional_diagnosis            String    @default("") @db.Text
+
+  // ── Analysis Results ──
+  lab_results                        String    @default("") @db.Text
+  bacterial_findings                  String    @default("") @db.Text
+
+  // ── Medications ──
+  current_medications                    String    @default("") @db.Text
+  prior_antibiotics                        String    @default("") @db.Text
+
+  status                                    Int       @default(0) @db.SmallInt
+  date_created                                DateTime  @default(now()) @db.Timestamptz
+  date_updated                                 DateTime  @updatedAt @db.Timestamptz
+
+  files                                          PhageTherapySurveyFile[]
+
+  @@index([status, date_created], name: "phage_therapy_survey_status_idx")
+  @@map("phage_therapy_survey")
+}
+
+model PhageTherapySurveyFile {
+  id            String    @id @default(cuid())
+  survey_id     String
+
+  file_url      String    @db.Char(256)
+  file_name     String    @default("") @db.Char(128)
+
+  date_created  DateTime  @default(now()) @db.Timestamptz
+
+  survey        PhageTherapySurvey @relation(fields: [survey_id], references: [id], onDelete: Cascade)
+
+  @@index([survey_id], name: "phage_survey_file_survey_idx")
+  @@map("phage_therapy_survey_file")
+}
+
